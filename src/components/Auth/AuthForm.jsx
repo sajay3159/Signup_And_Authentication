@@ -43,7 +43,7 @@ const AuthForm = () => {
             // localStorage.setItem("token", data.idToken);
           });
           setIsLoading(false);
-          history.push("/");
+          history.push("/profile");
         } else {
           return res.json().then((data) => {
             setIsLoading(false);
