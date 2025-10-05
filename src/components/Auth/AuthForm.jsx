@@ -20,6 +20,7 @@ const AuthForm = () => {
     const enteredEmail = emailInputRef.current.value;
     const enteredPassword = passwordInputRef.current.value;
     if (isLogin) {
+      setIsLoading(false);
     } else {
       fetch(
         "https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=AIzaSyDpWVsvC9evJbXOQnZHUyAxGQIOfLTaZOs",
@@ -30,15 +31,16 @@ const AuthForm = () => {
             password: enteredPassword,
             returnSecureToken: true,
           }),
-          header: {
+          headers: {
             "Content-Type": "application/json",
           },
         }
-      ).then(() => {
+      ).then((res) => {
         if (res.ok) {
           setIsLoading(false);
         } else {
           return res.json().then((data) => {
+            setIsLoading(false);
             let errorMessage = "Authentication failed";
             if (data && data.error && data.error.message) {
               errorMessage = data.error.message;
