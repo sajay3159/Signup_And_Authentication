@@ -1,10 +1,11 @@
 import { useRef, useState } from "react";
-
 import classes from "./AuthForm.module.css";
+import { useHistory } from "react-router-dom";
 
 const AuthForm = () => {
   const [isLogin, setIsLogin] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
+  const history = useHistory();
 
   const emailInputRef = useRef();
   const passwordInputRef = useRef();
@@ -20,6 +21,37 @@ const AuthForm = () => {
     const enteredEmail = emailInputRef.current.value;
     const enteredPassword = passwordInputRef.current.value;
     if (isLogin) {
+      fetch(
+        "https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=AIzaSyDpWVsvC9evJbXOQnZHUyAxGQIOfLTaZOs",
+        {
+          method: "POST",
+          body: JSON.stringify({
+            email: enteredEmail,
+            password: enteredPassword,
+            returnSecureToken: true,
+          }),
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      ).then((res) => {
+        if (res.ok) {
+          res.json().then((data) => {
+            localStorage.setItem("token", data.idToken);
+          });
+          setIsLoading(false);
+          history.push("/");
+        } else {
+          return res.json().then((data) => {
+            setIsLoading(false);
+            let errorMessage = "Authentication failed";
+            // if (data && data.error && data.error.message) {
+            //   errorMessage = data.error.message;
+            // }
+            alert(errorMessage);
+          });
+        }
+      });
       setIsLoading(false);
     } else {
       fetch(
