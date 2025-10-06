@@ -4,12 +4,41 @@ import Layout from "./components/Layout/Layout";
 import UserProfile from "./components/Profile/UserProfile";
 import AuthPage from "./pages/AuthPage";
 import HomePage from "./pages/HomePage";
-import { useContext } from "react";
+import { useContext, useEffect } from "react";
 import AuthContext from "./store/auth-context";
 
 function App() {
   const authCtx = useContext(AuthContext);
 
+  useEffect(() => {
+    const checkToken = async () => {
+      if (!authCtx.token) {
+        authCtx.logout();
+        return;
+      }
+
+      try {
+        const res = await fetch(
+          "https://identitytoolkit.googleapis.com/v1/accounts:lookup?key=AIzaSyDpWVsvC9evJbXOQnZHUyAxGQIOfLTaZOs",
+          {
+            method: "POST",
+            body: JSON.stringify({ idToken: authCtx.token }),
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );
+
+        if (!res.ok) {
+          authCtx.logout();
+        }
+      } catch (err) {
+        authCtx.logout();
+      }
+    };
+
+    checkToken();
+  }, [authCtx.token]);
   return (
     <Layout>
       <Switch>
