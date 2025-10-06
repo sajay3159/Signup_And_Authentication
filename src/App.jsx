@@ -11,34 +11,59 @@ function App() {
   const authCtx = useContext(AuthContext);
 
   useEffect(() => {
-    const checkToken = async () => {
-      if (!authCtx.token) {
-        authCtx.logout();
-        return;
-      }
+    const token = localStorage.getItem("token");
+    const expirationTime = localStorage.getItem("expirationTime");
+    if (!token || !expirationTime) {
+      authCtx.logout();
+      return;
+    }
 
-      try {
-        const res = await fetch(
-          "https://identitytoolkit.googleapis.com/v1/accounts:lookup?key=AIzaSyDpWVsvC9evJbXOQnZHUyAxGQIOfLTaZOs",
-          {
-            method: "POST",
-            body: JSON.stringify({ idToken: authCtx.token }),
-            headers: {
-              "Content-Type": "application/json",
-            },
-          }
-        );
+    if (new Date(expirationTime) <= new Date()) {
+      // Token expired
+      authCtx.logout();
+      return;
+    }
 
-        if (!res.ok) {
-          authCtx.logout();
-        }
-      } catch (err) {
-        authCtx.logout();
-      }
+    const remainingTime =
+      new Date(expirationTime).getTime() - new Date().getTime();
+
+    const logoutTimer = setTimeout(() => {
+      authCtx.logout();
+      alert("Session expired. Please login again.");
+    }, remainingTime);
+
+    return () => {
+      clearTimeout(logoutTimer);
     };
+    // authCtx.login(token);
+    // const checkToken = async () => {
+    //   if (!authCtx.token) {
+    //     authCtx.logout();
+    //     return;
+    //   }
 
-    checkToken();
-  }, [authCtx.token]);
+    //   try {
+    //     const res = await fetch(
+    //       "https://identitytoolkit.googleapis.com/v1/accounts:lookup?key=AIzaSyDpWVsvC9evJbXOQnZHUyAxGQIOfLTaZOs",
+    //       {
+    //         method: "POST",
+    //         body: JSON.stringify({ idToken: authCtx.token }),
+    //         headers: {
+    //           "Content-Type": "application/json",
+    //         },
+    //       }
+    //     );
+
+    //     if (!res.ok) {
+    //       authCtx.logout();
+    //     }
+    //   } catch (err) {
+    //     authCtx.logout();
+    //   }
+    // };
+
+    // checkToken();
+  }, [authCtx]);
   return (
     <Layout>
       <Switch>
